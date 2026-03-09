@@ -45,7 +45,7 @@ export const NAVIGATION = {
       name: "Tài khoản",
       path: "/profile",
       icon: "👤",
-    },
+    }
   ],
 
   /* ===== Admin ===== */
@@ -58,27 +58,27 @@ export const NAVIGATION = {
     },
     {
       name: "Quản lý phim",
-      path: "/admin/movies",
+      path: "/movies",
       icon: "🎬",
     },
     {
       name: "Lịch chiếu",
-      path: "/admin/showtimes",
+      path: "/showtimes",
       icon: "📅",
     },
     {
       name: "Phòng & Ghế",
-      path: "/admin/rooms",
+      path: "/room",
       icon: "🚪",
     },
     {
       name: "Khách hàng",
-      path: "/admin/customers",
+      path: "/customers",
       icon: "👥",
     },
     {
       name: "Thống kê",
-      path: "/admin/stats",
+      path: "/stats",
       icon: "📈",
     },
     {
@@ -87,4 +87,5 @@ export const NAVIGATION = {
       icon: "🎟",
     },
   ],
+
 };

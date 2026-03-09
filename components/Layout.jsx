@@ -8,44 +8,51 @@ const Layout = () => {
   const navigate = useNavigate();
 
   const [pendingCount, setPendingCount] = useState(0);
+  const [showNotifications, setShowNotifications] = useState(false);
 
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user = JSON.parse(localStorage.getItem("user") || "null");
 
   const role = user?.role === "admin" ? "admin" : "customer";
-  const menu = NAVIGATION[role] || [];
+  const menu = NAVIGATION?.[role] || [];
+
+  /* Notifications list */
+  const notifications = [
+    { id: 1, text: "Bạn đã đặt vé thành công 🎟" },
+    { id: 2, text: "Phim mới vừa được thêm 🎬" },
+    { id: 3, text: "Khuyến mãi 50% hôm nay 🔥" },
+  ];
 
   useEffect(() => {
 
-    const bookings =
-      JSON.parse(localStorage.getItem("bookings")) || [];
+    const bookings = JSON.parse(localStorage.getItem("bookings") || "[]");
 
-    const pending =
-      bookings.filter((b) => b.status === "pending");
+    const pending = bookings.filter((b) => b.status === "pending");
 
     setPendingCount(pending.length);
 
   }, []);
 
   const handleLogout = () => {
-
     localStorage.removeItem("user");
     navigate("/login");
-
   };
 
   const currentPage =
-    menu.find((item) => location.pathname.startsWith(item.path))?.name ||
-    "Trang chủ";
+    menu.find((item) =>
+      location.pathname.startsWith(item.path)
+    )?.name || "Trang chủ";
 
   return (
 
     <div className="flex min-h-screen bg-slate-50">
 
       {/* SIDEBAR */}
+
       {user && (
         <aside className="w-64 bg-slate-900 text-white fixed h-full flex flex-col">
 
-          {/* Logo */}
+          {/* LOGO */}
+
           <div className="p-6 border-b border-slate-800 flex items-center gap-3">
 
             <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center">
@@ -59,6 +66,7 @@ const Layout = () => {
           </div>
 
           {/* MENU */}
+
           <nav className="flex-1 p-4 space-y-2">
 
             {menu.map((item) => {
@@ -85,23 +93,23 @@ const Layout = () => {
 
                   {item.name}
 
-                  {/* admin notification */}
-                  {item.path === "/admin-bookings" &&
-                    pendingCount > 0 && (
-                      <span className="ml-auto text-xs bg-red-500 px-2 py-0.5 rounded-full">
-                        {pendingCount}
-                      </span>
+                  {item.path === "/admin-bookings" && pendingCount > 0 && (
+
+                    <span className="ml-auto text-xs bg-red-500 px-2 py-0.5 rounded-full">
+                      {pendingCount}
+                    </span>
+
                   )}
 
                 </Link>
 
               );
-
             })}
 
           </nav>
 
           {/* USER INFO */}
+
           <div className="p-6 border-t border-slate-800 flex items-center gap-3">
 
             <div className="w-8 h-8 bg-slate-700 rounded-full flex items-center justify-center">
@@ -128,9 +136,11 @@ const Layout = () => {
       )}
 
       {/* MAIN */}
+
       <main className={`flex-1 p-8 ${user ? "ml-64" : ""}`}>
 
         {/* HEADER */}
+
         <header className="mb-8 flex justify-between items-center">
 
           <h1 className="text-2xl font-bold">
@@ -140,8 +150,8 @@ const Layout = () => {
           <div className="flex items-center gap-4">
 
             {!user ? (
-              <>
 
+              <>
                 <Link
                   to="/login"
                   className="px-4 py-2 bg-slate-800 text-white rounded-lg"
@@ -155,32 +165,79 @@ const Layout = () => {
                 >
                   Register
                 </Link>
-
               </>
+
             ) : (
+
               <>
+                {/* NOTIFICATION */}
 
-                {/* notification */}
-                <button className="relative p-2 bg-white border rounded-lg">
+                <div className="relative">
 
-                  🔔
+                  <button
+                    onClick={() =>
+                      setShowNotifications(!showNotifications)
+                    }
+                    className="relative p-2 bg-white border rounded-lg"
+                  >
 
-                  {pendingCount > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-1 rounded-full">
-                      {pendingCount}
-                    </span>
+                    🔔
+
+                    {pendingCount > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-1 rounded-full">
+                        {pendingCount}
+                      </span>
+                    )}
+
+                  </button>
+
+                  {showNotifications && (
+
+                    <div className="absolute right-0 mt-3 w-72 bg-white border rounded-xl shadow-lg p-4 z-50">
+
+                      <h3 className="font-bold mb-3">
+                        Thông báo
+                      </h3>
+
+                      {notifications.length === 0 ? (
+                        <p className="text-gray-500 text-sm">
+                          Không có thông báo
+                        </p>
+                      ) : (
+
+                        <ul className="space-y-2">
+
+                          {notifications.map((n) => (
+
+                            <li
+                              key={n.id}
+                              className="p-2 text-sm rounded-lg hover:bg-gray-100 cursor-pointer"
+                            >
+                              {n.text}
+                            </li>
+
+                          ))}
+
+                        </ul>
+
+                      )}
+
+                    </div>
+
                   )}
 
-                </button>
+                </div>
 
-                {/* admin add button */}
+                {/* ADMIN ADD */}
+
                 {user.role === "admin" && (
                   <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg flex items-center gap-2">
                     ➕ Thêm mới
                   </button>
                 )}
 
-                {/* logout */}
+                {/* LOGOUT */}
+
                 <button
                   onClick={handleLogout}
                   className="px-4 py-2 bg-rose-500 text-white rounded-lg"
@@ -196,6 +253,7 @@ const Layout = () => {
         </header>
 
         {/* PAGE CONTENT */}
+
         <Outlet />
 
       </main>
@@ -203,7 +261,6 @@ const Layout = () => {
     </div>
 
   );
-
 };
 
 export default Layout;

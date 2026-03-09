@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { INITIAL_MOVIES } from "../store/mockData";
-import { generateMovieSummary } from "../services/geminiService";
 import { useNavigate } from "react-router-dom";
 
 const MovieManagement = () => {
