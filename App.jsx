@@ -16,6 +16,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import MyTickets from "./components/MyTickets";
 import Showtimes from "./components/Showtimes";
 import Profile from "./components/Profile";
+import ChatBox from "./components/ChatBox";
 
 /* Placeholder pages */
 
@@ -36,53 +37,63 @@ const Tickets = () => (
 const App = () => {
   return (
     <Router>
-      <Routes>
-
-        {/* Auth */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-
-        {/* Layout */}
-        <Route path="/" element={<Layout />}>
-
-          {/* Public */}
-          <Route index element={<Aggregator />} />
-
-          {/* Movie detail */}
-          <Route path="movies/:id" element={<MovieDetail />} />
-
-          {/* Customer */}
-          <Route path="profile" element={<Profile />} />
-          <Route path="invoice" element={<Invoice />} />
-          <Route path="my-tickets" element={<MyTickets />} />
-          <Route path="showtimes" element={<Showtimes />} />
-
-          {/* Admin */}
-          <Route path="movies" element={<MovieManagement />} />
-          <Route path="room" element={<RoomManagement />} />
-          <Route path="customers" element={
+    <Routes>
+  
+      {/* Auth */}
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+  
+      {/* Layout */}
+      <Route path="/" element={<Layout />}>
+  
+        <Route index element={<Aggregator />} />
+        <Route path="movies/:id" element={<MovieDetail />} />
+        <Route path="profile" element={<Profile />} />
+        <Route path="invoice" element={<Invoice />} />
+        <Route path="my-tickets" element={<MyTickets />} />
+        <Route path="showtimes" element={<Showtimes />} />
+  
+        {/* CHAT */}
+        <Route path="chat" element={<ChatBox />} />
+  
+        {/* Admin */}
+        <Route path="movies" element={<MovieManagement />} />
+        <Route path="room" element={<RoomManagement />} />
+  
+        <Route
+          path="customers"
+          element={
             <ProtectedRoute role="admin">
               <Customers />
             </ProtectedRoute>
-          } />
-          <Route path="stats" element={
+          }
+        />
+  
+        <Route
+          path="stats"
+          element={
             <ProtectedRoute role="admin">
               <Dashboard />
             </ProtectedRoute>
-          } />
-          <Route path="admin-bookings" element={
+          }
+        />
+  
+        <Route
+          path="admin-bookings"
+          element={
             <ProtectedRoute role="admin">
               <AdminBookings />
             </ProtectedRoute>
-          } />
-
-        </Route>
-
-        {/* Redirect */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-
-      </Routes>
-    </Router>
+          }
+        />
+  
+      </Route>
+  
+      {/* Redirect */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+  
+    </Routes>
+  </Router>
   );
 };
 

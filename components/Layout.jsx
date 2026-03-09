@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate, Outlet } from "react-router-dom";
 import { NAVIGATION } from "../constants";
+import ChatBox from "./ChatBox";
+import AIIcon from "../AI.jpg";
 
 const Layout = () => {
 
@@ -9,13 +11,13 @@ const Layout = () => {
 
   const [pendingCount, setPendingCount] = useState(0);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [openChat, setOpenChat] = useState(false);
 
   const user = JSON.parse(localStorage.getItem("user") || "null");
 
   const role = user?.role === "admin" ? "admin" : "customer";
   const menu = NAVIGATION?.[role] || [];
 
-  /* Notifications list */
   const notifications = [
     { id: 1, text: "Bạn đã đặt vé thành công 🎟" },
     { id: 2, text: "Phim mới vừa được thêm 🎬" },
@@ -25,7 +27,6 @@ const Layout = () => {
   useEffect(() => {
 
     const bookings = JSON.parse(localStorage.getItem("bookings") || "[]");
-
     const pending = bookings.filter((b) => b.status === "pending");
 
     setPendingCount(pending.length);
@@ -51,21 +52,12 @@ const Layout = () => {
       {user && (
         <aside className="w-64 bg-slate-900 text-white fixed h-full flex flex-col">
 
-          {/* LOGO */}
-
           <div className="p-6 border-b border-slate-800 flex items-center gap-3">
-
             <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center">
               🎟
             </div>
-
-            <span className="text-xl font-bold">
-              CineMaster
-            </span>
-
+            <span className="text-xl font-bold">CineMaster</span>
           </div>
-
-          {/* MENU */}
 
           <nav className="flex-1 p-4 space-y-2">
 
@@ -108,8 +100,6 @@ const Layout = () => {
 
           </nav>
 
-          {/* USER INFO */}
-
           <div className="p-6 border-t border-slate-800 flex items-center gap-3">
 
             <div className="w-8 h-8 bg-slate-700 rounded-full flex items-center justify-center">
@@ -117,7 +107,6 @@ const Layout = () => {
             </div>
 
             <div>
-
               <p className="text-sm font-semibold">
                 {user?.username}
               </p>
@@ -127,7 +116,6 @@ const Layout = () => {
                   ? "Quản trị viên"
                   : "Khách hàng"}
               </p>
-
             </div>
 
           </div>
@@ -170,6 +158,7 @@ const Layout = () => {
             ) : (
 
               <>
+
                 {/* NOTIFICATION */}
 
                 <div className="relative">
@@ -199,28 +188,20 @@ const Layout = () => {
                         Thông báo
                       </h3>
 
-                      {notifications.length === 0 ? (
-                        <p className="text-gray-500 text-sm">
-                          Không có thông báo
-                        </p>
-                      ) : (
+                      <ul className="space-y-2">
 
-                        <ul className="space-y-2">
+                        {notifications.map((n) => (
 
-                          {notifications.map((n) => (
+                          <li
+                            key={n.id}
+                            className="p-2 text-sm rounded-lg hover:bg-gray-100 cursor-pointer"
+                          >
+                            {n.text}
+                          </li>
 
-                            <li
-                              key={n.id}
-                              className="p-2 text-sm rounded-lg hover:bg-gray-100 cursor-pointer"
-                            >
-                              {n.text}
-                            </li>
+                        ))}
 
-                          ))}
-
-                        </ul>
-
-                      )}
+                      </ul>
 
                     </div>
 
@@ -228,15 +209,11 @@ const Layout = () => {
 
                 </div>
 
-                {/* ADMIN ADD */}
-
                 {user.role === "admin" && (
                   <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg flex items-center gap-2">
                     ➕ Thêm mới
                   </button>
                 )}
-
-                {/* LOGOUT */}
 
                 <button
                   onClick={handleLogout}
@@ -252,9 +229,44 @@ const Layout = () => {
 
         </header>
 
-        {/* PAGE CONTENT */}
+        {/* PAGE */}
 
         <Outlet />
+
+        {/* CHAT POPUP */}
+
+        {openChat && <ChatBox />}
+
+        {/* AI BUTTON */}
+
+        <button
+          onClick={() => setOpenChat(!openChat)}
+          style={{
+            position: "fixed",
+            bottom: "24px",
+            right: "24px",
+            width: "60px",
+            height: "60px",
+            borderRadius: "50%",
+            border: "none",
+            background: "transparent",
+            cursor: "pointer",
+            zIndex: 999
+          }}
+        >
+
+          <img
+            src={AIIcon}
+            alt="AI Chat"
+            style={{
+              width: "100%",
+              height: "100%",
+              borderRadius: "50%",
+              boxShadow: "0 4px 10px rgba(0,0,0,0.3)"
+            }}
+          />
+
+        </button>
 
       </main>
 
