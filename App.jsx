@@ -53,8 +53,6 @@ const App = () => {
         <Route path="my-tickets" element={<MyTickets />} />
         <Route path="showtimes" element={<Showtimes />} />
   
-        {/* CHAT */}
-        <Route path="chat" element={<ChatBox />} />
   
         {/* Admin */}
         <Route path="movies" element={<MovieManagement />} />

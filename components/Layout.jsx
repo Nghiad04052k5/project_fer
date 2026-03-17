@@ -1,17 +1,34 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Link, useLocation, useNavigate, Outlet } from "react-router-dom";
 import { NAVIGATION } from "../constants";
 import ChatBox from "./ChatBox";
 import AIIcon from "../AI.jpg";
 
-const Layout = () => {
+// 🔥 DATA PHIM (bạn có thể import từ file khác)
+const MOVIES = [
+  { id: 1, title: "Avengers" },
+  { id: 2, title: "Interstellar" },
+  { id: 3, title: "The Conjuring" },
+];
 
+const Layout = () => {
   const location = useLocation();
   const navigate = useNavigate();
-
+  const [selectedMovie, setSelectedMovie] = useState(null);
+  
   const [pendingCount, setPendingCount] = useState(0);
   const [showNotifications, setShowNotifications] = useState(false);
   const [openChat, setOpenChat] = useState(false);
+
+  // 🔥\ SEARCH STATE
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
+  const handleSearch = () => {
+    const found = MOVIES.find((m) =>
+      m.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setSelectedMovie(found || null);
+  };
 
   const user = JSON.parse(localStorage.getItem("user") || "null");
 
@@ -25,12 +42,9 @@ const Layout = () => {
   ];
 
   useEffect(() => {
-
     const bookings = JSON.parse(localStorage.getItem("bookings") || "[]");
     const pending = bookings.filter((b) => b.status === "pending");
-
     setPendingCount(pending.length);
-
   }, []);
 
   const handleLogout = () => {
@@ -38,20 +52,21 @@ const Layout = () => {
     navigate("/login");
   };
 
-  const currentPage =
-    menu.find((item) =>
-      location.pathname.startsWith(item.path)
-    )?.name || "Trang chủ";
+  // 🔥 FILTER PHIM
+  const filteredMovies = useMemo(() => {
+    return MOVIES.filter((movie) =>
+      movie.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [searchQuery]);
 
   return (
-
-    <div className="flex min-h-screen bg-slate-50">
-
+    <div
+      className="flex min-h-screen bg-cover bg-center"
+      style={{ backgroundImage: "url('/rap.jpg')" }}
+    >
       {/* SIDEBAR */}
-
       {user && (
-        <aside className="w-64 bg-slate-900 text-white fixed h-full flex flex-col">
-
+        <aside className="w-64 bg-slate-900 text-white fixed top-0 left-0 h-full flex flex-col z-50">
           <div className="p-6 border-b border-slate-800 flex items-center gap-3">
             <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center">
               🎟
@@ -60,14 +75,10 @@ const Layout = () => {
           </div>
 
           <nav className="flex-1 p-4 space-y-2">
-
             {menu.map((item) => {
-
-              const isActive =
-                location.pathname.startsWith(item.path);
+              const isActive = location.pathname.startsWith(item.path);
 
               return (
-
                 <Link
                   key={item.path}
                   to={item.path}
@@ -78,67 +89,117 @@ const Layout = () => {
                       : "text-slate-400 hover:bg-slate-800 hover:text-white"
                   }`}
                 >
-
-                  <span className="w-5 text-center">
-                    {item.icon}
-                  </span>
-
+                  <span className="w-5 text-center">{item.icon}</span>
                   {item.name}
 
                   {item.path === "/admin-bookings" && pendingCount > 0 && (
-
                     <span className="ml-auto text-xs bg-red-500 px-2 py-0.5 rounded-full">
                       {pendingCount}
                     </span>
-
                   )}
-
                 </Link>
-
               );
             })}
-
           </nav>
 
           <div className="p-6 border-t border-slate-800 flex items-center gap-3">
-
             <div className="w-8 h-8 bg-slate-700 rounded-full flex items-center justify-center">
-              👤
+              {user?.username?.charAt(0).toUpperCase()}
             </div>
-
             <div>
-              <p className="text-sm font-semibold">
-                {user?.username}
-              </p>
-
+              <p className="text-sm font-semibold">{user?.username}</p>
               <p className="text-xs text-slate-400">
-                {user?.role === "admin"
-                  ? "Quản trị viên"
-                  : "Khách hàng"}
+                {user?.role === "admin" ? "Quản trị viên" : "Khách hàng"}
               </p>
             </div>
-
           </div>
-
         </aside>
       )}
 
       {/* MAIN */}
+      <main className={`flex-1 ${user ? "ml-64" : ""}`}>
+        {/* NAVBAR */}
+        <div
+          className={`fixed top-0 right-0 flex items-center justify-between px-6 border-b shadow-sm z-40
+          ${user ? "left-64" : "left-0"}`}
+          style={{
+            background: "white",
+            backdropFilter: "blur(10px)",
+            height: "80px",
+          }}
+        >
+          {/* LEFT */}
+          <div className="flex items-center gap-6 w-full max-w-3xl">
+            <h2
+              style={{
+                fontSize: "14px",
+                fontWeight: "inherit",
+                color: "red",
+                lineHeight: "18px",
+                marginLeft: "-10px",
+              }}
+            >
+              Đặt vé <br />
+              xem phim
+            </h2>
 
-      <main className={`flex-1 p-8 ${user ? "ml-64" : ""}`}>
+            {/* SEARCH */}
+<div className="relative flex-1">
+  <input
+    type="text"
+    value={searchQuery}
+    onChange={(e) => {
+      setSearchQuery(e.target.value);
+      setShowDropdown(true);
+    }}
+    onKeyDown={(e) => {
+      if (e.key === "Enter") {
+        handleSearch();
+      }
+    }}
+    onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
+    placeholder="Bạn muốn xem phim gì hôm nay?"
+    className="w-full pl-10 pr-4 py-2 bg-slate-100 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-400 text-sm"
+  />
 
-        {/* HEADER */}
+  {/* ICON SEARCH */}
+  <span
+    onClick={handleSearch}
+    className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 cursor-pointer"
+  >
+    🔍
+  </span>
 
-        <header className="mb-8 flex justify-between items-center">
+  {/* DROPDOWN */}
+  {showDropdown && searchQuery && (
+    <div className="absolute top-full left-0 w-full bg-white border rounded-xl shadow mt-2 z-50">
+      {filteredMovies.length > 0 ? (
+        filteredMovies.map((movie) => (
+          <div
+            key={movie.id}
+            onMouseDown={() => {
+              setSearchQuery(movie.title);
+              setSelectedMovie(movie);
+              setShowDropdown(false);
+            }}
+            className="p-2 hover:bg-gray-100 cursor-pointer text-sm"
+          >
+            {movie.title}
+          </div>
+        ))
+      ) : (
+        <div className="p-2 text-gray-500 text-sm">
+          Không tìm thấy
+        </div>
+      )}
+    </div>
+  )}
+</div>
+          </div>
 
-          <h1 className="text-2xl font-bold">
-            {currentPage}
-          </h1>
-
+          {/* RIGHT */}
           <div className="flex items-center gap-4">
-
             {!user ? (
-
               <>
                 <Link
                   to="/login"
@@ -146,7 +207,6 @@ const Layout = () => {
                 >
                   Login
                 </Link>
-
                 <Link
                   to="/register"
                   className="px-4 py-2 bg-indigo-600 text-white rounded-lg"
@@ -154,124 +214,39 @@ const Layout = () => {
                   Register
                 </Link>
               </>
-
             ) : (
-
               <>
-
-                {/* NOTIFICATION */}
-
-                <div className="relative">
-
-                  <button
-                    onClick={() =>
-                      setShowNotifications(!showNotifications)
-                    }
-                    className="relative p-2 bg-white border rounded-lg"
-                  >
-
-                    🔔
-
-                    {pendingCount > 0 && (
-                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-1 rounded-full">
-                        {pendingCount}
-                      </span>
-                    )}
-
-                  </button>
-
-                  {showNotifications && (
-
-                    <div className="absolute right-0 mt-3 w-72 bg-white border rounded-xl shadow-lg p-4 z-50">
-
-                      <h3 className="font-bold mb-3">
-                        Thông báo
-                      </h3>
-
-                      <ul className="space-y-2">
-
-                        {notifications.map((n) => (
-
-                          <li
-                            key={n.id}
-                            className="p-2 text-sm rounded-lg hover:bg-gray-100 cursor-pointer"
-                          >
-                            {n.text}
-                          </li>
-
-                        ))}
-
-                      </ul>
-
-                    </div>
-
-                  )}
-
-                </div>
-
-                {user.role === "admin" && (
-                  <button className="px-4 py-2 bg-indigo-600 text-white rounded-lg flex items-center gap-2">
-                    ➕ Thêm mới
-                  </button>
-                )}
-
                 <button
                   onClick={handleLogout}
                   className="px-4 py-2 bg-rose-500 text-white rounded-lg"
                 >
                   Logout
                 </button>
-
               </>
             )}
-
           </div>
+        </div>
 
-        </header>
+        {/* CONTENT */}
+        <div className="pt-20 p-8">
+          <Outlet />
+        </div>
 
-        {/* PAGE */}
-
-        <Outlet />
-
-        {/* CHAT POPUP */}
-
+        {/* CHAT */}
         {openChat && <ChatBox />}
-
-        {/* AI BUTTON */}
 
         <button
           onClick={() => setOpenChat(!openChat)}
-          style={{
-            position: "fixed",
-            bottom: "24px",
-            right: "24px",
-            width: "60px",
-            height: "60px",
-            borderRadius: "50%",
-            border: "none",
-            background: "transparent",
-            cursor: "pointer",
-            zIndex: 999
-          }}
+          className="fixed bottom-6 right-6 w-14 h-14 rounded-full shadow-lg z-50"
         >
-
           <img
             src={AIIcon}
             alt="AI Chat"
-            style={{
-              width: "100%",
-              height: "100%",
-              borderRadius: "50%",
-              boxShadow: "0 4px 10px rgba(0,0,0,0.3)"
-            }}
+            className="w-full h-full rounded-full"
           />
-
         </button>
-
       </main>
-
     </div>
-
   );
 };
 
